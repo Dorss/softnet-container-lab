@@ -21,15 +21,24 @@ clab-softnet/
 │   ├── lib/
 │   │   ├── deploy.sh               # Shared deploy logic (sourced by lab wrappers)
 │   │   └── destroy.sh              # Shared destroy logic (sourced by lab wrappers)
-│   └── basic-lab/                  # Lab 1: entrypoint baked into the image
-│       ├── basic-lab.clab.yml
+│   ├── basic-lab/                  # Lab 1: entrypoint baked into the image
+│   │   ├── basic-lab.clab.yml
+│   │   ├── Dockerfile
+│   │   ├── bin/entrypoint.sh
+│   │   ├── configs/
+│   │   │   ├── node1.cfg
+│   │   │   └── node2.cfg
+│   │   ├── deploy.sh               # Thin wrapper → calls lib/deploy.sh
+│   │   └── destroy.sh              # Thin wrapper → calls lib/destroy.sh
+│   └── bind-entrypoint-lab/        # Lab 2: entrypoint bind-mounted at runtime
+│       ├── bind-entrypoint-lab.clab.yml
 │       ├── Dockerfile
 │       ├── bin/entrypoint.sh
 │       ├── configs/
 │       │   ├── node1.cfg
 │       │   └── node2.cfg
-│       ├── deploy.sh               # Thin wrapper → calls lib/deploy.sh
-│       └── destroy.sh              # Thin wrapper → calls lib/destroy.sh
+│       ├── deploy.sh
+│       └── destroy.sh
 ├── scripts/
 │   └── build-image.sh              # Build Docker image for a specific lab
 ├── PLAN.md                         # Architecture and design notes
@@ -54,6 +63,12 @@ clab-softnet/
 Entrypoint is baked into the Docker image via `COPY`. Changing the entrypoint requires rebuilding the image.
 
 **Image:** `clab-softnet-basic:latest`
+
+### bind-entrypoint-lab
+
+Entrypoint is **not** in the image — it is bind-mounted from the host at runtime. Students can edit `bin/entrypoint.sh` and redeploy without rebuilding the image, demonstrating the value of keeping images generic.
+
+**Image:** `clab-softnet-bind-ep:latest`
 
 ---
 
@@ -110,6 +125,7 @@ cd containerlab/basic-lab
 
 ```bash
 ./scripts/build-image.sh basic-lab
+./scripts/build-image.sh bind-entrypoint-lab
 ```
 
 ---
