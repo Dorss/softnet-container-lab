@@ -3,7 +3,7 @@ name: basic-lab
 topology:
   defaults:
     kind: linux
-    image: clab-ubuntu-softnet:latest
+    image: clab-softnet-basic:latest
 
   nodes:
     node1:

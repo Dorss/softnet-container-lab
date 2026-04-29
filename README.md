@@ -18,20 +18,23 @@ A simple 2-node containerlab topology:
 ```
 clab-softnet/
 ├── containerlab/
-│   ├── basic-lab.clab.yml      # 2-node topology (node1 <-> node2)
-│   ├── Dockerfile              # Ubuntu 24.04 image (sleep infinity as PID 1)
-│   ├── bin/
-│   │   └── entrypoint.sh       # Network configuration script (called via exec)
-│   ├── configs/                # Per-node configuration
-│   │   ├── node1.cfg
-│   │   └── node2.cfg
-│   ├── deploy.sh               # Deploy helper
-│   └── destroy.sh              # Destroy helper
+│   ├── lib/
+│   │   ├── deploy.sh               # Shared deploy logic (sourced by lab wrappers)
+│   │   └── destroy.sh              # Shared destroy logic (sourced by lab wrappers)
+│   └── basic-lab/                  # Lab 1: entrypoint baked into the image
+│       ├── basic-lab.clab.yml
+│       ├── Dockerfile
+│       ├── bin/entrypoint.sh
+│       ├── configs/
+│       │   ├── node1.cfg
+│       │   └── node2.cfg
+│       ├── deploy.sh               # Thin wrapper → calls lib/deploy.sh
+│       └── destroy.sh              # Thin wrapper → calls lib/destroy.sh
 ├── scripts/
-│   └── build-image.sh          # Build custom Docker image
-├── PLAN.md                     # Architecture and design notes
-├── README.md                   # This file
-└── TROUBLESHOOTING.md          # Debug guide
+│   └── build-image.sh              # Build Docker image for a specific lab
+├── PLAN.md                         # Architecture and design notes
+├── README.md                       # This file
+└── TROUBLESHOOTING.md              # Debug guide
 ```
 
 ---
@@ -44,25 +47,34 @@ clab-softnet/
 
 ---
 
+## Labs
+
+### basic-lab
+
+Entrypoint is baked into the Docker image via `COPY`. Changing the entrypoint requires rebuilding the image.
+
+**Image:** `clab-softnet-basic:latest`
+
+---
+
 ## Quick Start
 
-### 1. Build Docker Image
+### Deploy a lab
+
+Each lab is self-contained. From the lab directory:
 
 ```bash
-cd containerlab
-docker build -t clab-ubuntu-softnet:latest .
+cd containerlab/basic-lab
+./deploy.sh
 ```
 
-Or use the helper script:
+The deploy script will build the Docker image if not present, then deploy the topology.
+
+Or step by step:
 
 ```bash
-./scripts/build-image.sh
-```
-
-### 2. Deploy Topology
-
-```bash
-cd containerlab
+cd containerlab/basic-lab
+docker build -t clab-softnet-basic:latest .
 containerlab deploy -t basic-lab.clab.yml
 ```
 
@@ -73,10 +85,11 @@ Containerlab will:
 
 The entrypoint output is shown directly in the deploy log.
 
-### 3. Verify Connectivity
+### Verify connectivity
 
 ```bash
-# Check node status
+# Check node status (from lab directory)
+cd containerlab/basic-lab
 containerlab inspect -t basic-lab.clab.yml
 
 # IPv4 ping
@@ -86,11 +99,17 @@ docker exec clab-basic-lab-node1 ping -c 3 10.0.0.2
 docker exec clab-basic-lab-node1 ping -6 -c 3 fc00::2
 ```
 
-### 4. Destroy Topology
+### Destroy
 
 ```bash
-cd containerlab
-containerlab destroy -t basic-lab.clab.yml --cleanup
+cd containerlab/basic-lab
+./destroy.sh
+```
+
+### Build image only
+
+```bash
+./scripts/build-image.sh basic-lab
 ```
 
 ---
@@ -137,21 +156,29 @@ The container stays alive via `CMD ["sleep", "infinity"]` in the Dockerfile.
 
 ---
 
+## Adding a New Lab
+
+1. Create a new directory under `containerlab/` with a `Dockerfile`, topology file, `configs/`, and `bin/entrypoint.sh`
+2. Write a `deploy.sh` and `destroy.sh` wrapper (5 lines each) that set `LAB_NAME`, `IMAGE`, `TOPOLOGY`, `LAB_DIR` and source `../lib/deploy.sh` / `../lib/destroy.sh`
+3. Deploy with `./deploy.sh` from the new lab directory
+
+---
+
 ## Commands Reference
 
 ```bash
-# Deploy
-containerlab deploy -t basic-lab.clab.yml
+# Deploy (from lab directory)
+./deploy.sh
 
 # Inspect
-containerlab inspect -t basic-lab.clab.yml
+containerlab inspect -t <topology>.clab.yml
 
 # Shell access
-docker exec -it clab-basic-lab-node1 bash
-docker exec -it clab-basic-lab-node2 bash
+docker exec -it clab-<lab-name>-node1 bash
+docker exec -it clab-<lab-name>-node2 bash
 
-# Destroy
-containerlab destroy -t basic-lab.clab.yml --cleanup
+# Destroy (from lab directory)
+./destroy.sh
 ```
 
 ---

@@ -1,32 +1,42 @@
 #!/bin/bash
 set -euo pipefail
-# Build Docker image script for basic-lab
+# Build Docker image for a specific lab.
+# Usage: ./build-image.sh <lab-name>
+# Example: ./build-image.sh basic-lab
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
-CONTAINERLAB_DIR="${PROJECT_ROOT}/containerlab"
 
-echo "=== Build Docker Image for basic-lab =="
+LAB_NAME="${1:-}"
+if [[ -z "${LAB_NAME}" ]]; then
+    echo "Usage: $0 <lab-name>"
+    echo ""
+    echo "Available labs:"
+    for d in "${PROJECT_ROOT}/containerlab"/*/; do
+        [[ -f "${d}/Dockerfile" ]] && echo "  $(basename "${d}")"
+    done
+    exit 1
+fi
 
-# Navigate to containerlab directory
-cd "${CONTAINERLAB_DIR}"
+LAB_DIR="${PROJECT_ROOT}/containerlab/${LAB_NAME}"
+if [[ ! -d "${LAB_DIR}" ]]; then
+    echo "[ERROR] Lab not found: ${LAB_DIR}"
+    exit 1
+fi
 
-# Build the image
+IMAGE="clab-softnet-${LAB_NAME}:latest"
+
+echo "=== Build Docker Image for ${LAB_NAME} ==="
 echo ""
-echo "== Building clab-ubuntu-softnet:latest =="
-docker build -t clab-ubuntu-softnet:latest .
+echo "== Building ${IMAGE} =="
+docker build -t "${IMAGE}" "${LAB_DIR}"
 
-# Verify build
 echo ""
 echo "== Verification =="
-docker images clab-ubuntu-softnet:latest
+docker images "${IMAGE}"
 
 echo ""
-echo "=== Build Complete =="
+echo "=== Build Complete ==="
+echo "Image: ${IMAGE}"
 echo ""
-echo "Image: clab-ubuntu-softnet:latest"
-echo ""
-echo "Next steps:"
-echo "  1. Deploy topology: cd ${CONTAINERLAB_DIR} && ./deploy.sh"
-echo "  2. Or run: containerlab deploy -t basic-lab.clab.yml"
-echo ""
+echo "Next step: cd ${LAB_DIR} && ./deploy.sh"

@@ -1,5 +1,6 @@
 # Containerlab runtime state
 containerlab/clab-*/
+containerlab/*/clab-*/
 
 # Claude Code session data
 .claude/
