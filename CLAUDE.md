@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Repo Is
 
-A minimal [containerlab](https://containerlab.dev/) topology demonstrating a 2-node dual-stack (IPv4 + IPv6) point-to-point lab using a custom Docker image. The primary learning goals are containerlab topology authoring, Docker-based network nodes, and clean separation of image vs. node-specific configuration.
+A set of [containerlab](https://containerlab.dev/) topologies demonstrating dual-stack (IPv4 + IPv6) networking with custom Docker images. The primary learning goals are containerlab topology authoring, Docker-based network nodes, clean separation of image vs. node-specific configuration, and IP routing.
 
 ## Key Commands
 
@@ -12,12 +12,14 @@ A minimal [containerlab](https://containerlab.dev/) topology demonstrating a 2-n
 ```bash
 bash scripts/build-image.sh basic-lab
 bash scripts/build-image.sh bind-entrypoint-lab
+bash scripts/build-image.sh routing-lab
 ```
 
 **Deploy a topology (from lab directory):**
 ```bash
 cd containerlab/basic-lab && ./deploy.sh
 cd containerlab/bind-entrypoint-lab && ./deploy.sh
+cd containerlab/routing-lab && ./deploy.sh
 ```
 
 **Inspect / verify:**
@@ -49,10 +51,11 @@ cd containerlab/basic-lab && ./destroy.sh
 
 Each lab lives in its own subdirectory under `containerlab/`. Shared deploy/destroy logic lives in `containerlab/lib/` and is sourced by thin 5-line wrappers in each lab directory. Each lab has its own Docker image tag so labs are fully independent.
 
-| Lab | Image | Entrypoint |
-|-----|-------|------------|
-| `basic-lab` | `clab-softnet-basic:latest` | baked into image via `COPY` |
-| `bind-entrypoint-lab` | `clab-softnet-bind-ep:latest` | bind-mounted from host at runtime |
+| Lab | Image | Entrypoint | Nodes |
+|-----|-------|------------|-------|
+| `basic-lab` | `clab-softnet-basic:latest` | baked into image via `COPY` | 2 (node1, node2) p2p |
+| `bind-entrypoint-lab` | `clab-softnet-bind-ep:latest` | bind-mounted from host at runtime | 2 (node1, node2) p2p |
+| `routing-lab` | `clab-softnet-routing:latest` | bind-mounted from host at runtime | 3 (hs1, rt1, hs2) linear |
 
 ### Lifecycle separation
 

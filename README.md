@@ -30,20 +30,28 @@ clab-softnet/
 │   │   │   └── node2.cfg
 │   │   ├── deploy.sh               # Thin wrapper → calls lib/deploy.sh
 │   │   └── destroy.sh              # Thin wrapper → calls lib/destroy.sh
-│   └── bind-entrypoint-lab/        # Lab 2: entrypoint bind-mounted at runtime
-│       ├── bind-entrypoint-lab.clab.yml
+│   ├── bind-entrypoint-lab/        # Lab 2: entrypoint bind-mounted at runtime
+│   │   ├── bind-entrypoint-lab.clab.yml
+│   │   ├── Dockerfile
+│   │   ├── bin/entrypoint.sh
+│   │   ├── configs/
+│   │   │   ├── node1.cfg
+│   │   │   └── node2.cfg
+│   │   ├── deploy.sh
+│   │   └── destroy.sh
+│   └── routing-lab/                # Lab 3: 3-node linear topology with routing
+│       ├── routing-lab.clab.yml
 │       ├── Dockerfile
 │       ├── bin/entrypoint.sh
 │       ├── configs/
-│       │   ├── node1.cfg
-│       │   └── node2.cfg
+│       │   ├── hs1.cfg
+│       │   ├── rt1.cfg
+│       │   └── hs2.cfg
 │       ├── deploy.sh
 │       └── destroy.sh
 ├── scripts/
 │   └── build-image.sh              # Build Docker image for a specific lab
-├── PLAN.md                         # Architecture and design notes
-├── README.md                       # This file
-└── TROUBLESHOOTING.md              # Debug guide
+└── README.md                       # This file
 ```
 
 ---
@@ -69,6 +77,20 @@ Entrypoint is baked into the Docker image via `COPY`. Changing the entrypoint re
 Entrypoint is **not** in the image — it is bind-mounted from the host at runtime. Students can edit `bin/entrypoint.sh` and redeploy without rebuilding the image, demonstrating the value of keeping images generic.
 
 **Image:** `clab-softnet-bind-ep:latest`
+
+### routing-lab
+
+Three-node linear topology: `hs1 <--> rt1 <--> hs2`. The two hosts know only their own subnet and reach the other side via a default route toward `rt1`. The router has IP forwarding enabled (IPv4 + IPv6) and learns both subnets from its directly connected interfaces — no static routes needed.
+
+```
+    +--------+  10.0.1.0/24  +--------+  10.0.2.0/24  +--------+
+    |  hs1   |  fc00:1::/64  |  rt1   |  fc00:2::/64  |  hs2   |
+    |10.0.1.1|<------------->|10.0.1.254              |10.0.2.1|
+    |fc00:1::1|              |10.0.2.254<------------>|fc00:2::1|
+    +--------+               +--------+               +--------+
+```
+
+**Image:** `clab-softnet-routing:latest`
 
 ---
 
@@ -196,12 +218,6 @@ docker exec -it clab-<lab-name>-node2 bash
 # Destroy (from lab directory)
 ./destroy.sh
 ```
-
----
-
-## Troubleshooting
-
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 ---
 
