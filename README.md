@@ -197,7 +197,7 @@ The container stays alive via `CMD ["sleep", "infinity"]` in the Dockerfile.
 ## Adding a New Lab
 
 1. Create a new directory under `containerlab/` with a `Dockerfile`, topology file, `configs/`, and `bin/entrypoint.sh`
-2. Write a `deploy.sh` and `destroy.sh` wrapper (5 lines each) that set `LAB_NAME`, `IMAGE`, `TOPOLOGY`, `LAB_DIR` and source `../lib/deploy.sh` / `../lib/destroy.sh`
+2. Write a `deploy.sh` and `destroy.sh` wrapper that set `LAB_NAME`, `IMAGE`, `TOPOLOGY`, `NODES`, `LAB_DIR` and source `../lib/deploy.sh` / `../lib/destroy.sh`
 3. Deploy with `./deploy.sh` from the new lab directory
 
 ---
@@ -212,8 +212,7 @@ The container stays alive via `CMD ["sleep", "infinity"]` in the Dockerfile.
 containerlab inspect -t <topology>.clab.yml
 
 # Shell access
-docker exec -it clab-<lab-name>-node1 bash
-docker exec -it clab-<lab-name>-node2 bash
+docker exec -it clab-<lab-name>-<node> bash
 
 # Destroy (from lab directory)
 ./destroy.sh
