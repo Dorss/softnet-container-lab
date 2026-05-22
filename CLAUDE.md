@@ -88,5 +88,5 @@ PEER_IP6=fc00::2
 ## Adding a New Lab
 
 1. Create `containerlab/<lab-name>/` with a `Dockerfile`, topology file, `bin/entrypoint.sh`, and `configs/`
-2. Write 5-line `deploy.sh` and `destroy.sh` wrappers that set `LAB_NAME`, `IMAGE`, `TOPOLOGY`, `LAB_DIR` and source `../lib/deploy.sh` / `../lib/destroy.sh`
+2. Write `deploy.sh` and `destroy.sh` wrappers that set `LAB_NAME`, `IMAGE`, `TOPOLOGY`, `NODES`, `LAB_DIR` and source `../lib/deploy.sh` / `../lib/destroy.sh`
 3. Each lab uses its own image tag (`clab-softnet-<lab-name>:latest`) to stay fully independent
