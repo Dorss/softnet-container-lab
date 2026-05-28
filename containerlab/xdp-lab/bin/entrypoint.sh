@@ -15,7 +15,7 @@ fi
 source "${CFG_FILE}"
 
 ip link set lo up
-ip link set "${ETH1_INTERFACE}" up
+ip link set "${ETH1_INTERFACE}" up mtu 1500
 ip addr flush dev "${ETH1_INTERFACE}" 2>/dev/null || true
 ip addr add "${NODE_IP}/${NODE_PREFIX}" dev "${ETH1_INTERFACE}"
 ip -6 addr add "${NODE_IP6}/${NODE_PREFIX6}" dev "${ETH1_INTERFACE}" nodad
