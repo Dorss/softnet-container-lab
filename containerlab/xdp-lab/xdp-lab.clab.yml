@@ -10,6 +10,7 @@ topology:
       binds:
         - configs/node1.cfg:/etc/nodes/node1.cfg:ro
         - /sys/fs/bpf:/sys/fs/bpf:rw
+        - /sys/kernel/debug:/sys/kernel/debug:ro
         - src/:/work/bpf:ro
       exec:
         - bash /entrypoint.sh
@@ -18,6 +19,7 @@ topology:
       binds:
         - configs/node2.cfg:/etc/nodes/node2.cfg:ro
         - /sys/fs/bpf:/sys/fs/bpf:rw
+        - /sys/kernel/debug:/sys/kernel/debug:ro
         - src/:/work/bpf:ro
       exec:
         - bash /entrypoint.sh
