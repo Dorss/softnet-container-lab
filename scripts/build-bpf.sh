@@ -44,7 +44,7 @@ if [[ -n "${SRCFILE}" ]]; then
         exit 1
     fi
 
-    OUTFILE="${SRCFILE%.bpf.c}.o"
+    OUTFILE="${SRCFILE%.c}.o"
 
     if [[ ! -f "${SRCDIR}/vmlinux.h" ]]; then
         echo "[INFO] vmlinux.h missing, generating automatically..."

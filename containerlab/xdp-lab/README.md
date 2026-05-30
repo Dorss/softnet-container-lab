@@ -44,7 +44,7 @@ make
 ```
 
 Generates `vmlinux.h` from host kernel BTF (on first run) and compiles
-`test_xdp.bpf.c` → `test_xdp.o` inside the `bpf-builder` container.
+`test_xdp.bpf.c` → `test_xdp.bpf.o` inside the `bpf-builder` container.
 
 ```bash
 cd ..
@@ -59,7 +59,7 @@ cd ..
 ### 3. Attach the XDP program on node1
 
 ```bash
-docker exec clab-xdp-lab-node1 bash -c 'ip link set dev eth1 xdp obj /work/bpf/test_xdp.o sec xdp'
+docker exec clab-xdp-lab-node1 bash -c 'ip link set dev eth1 xdp obj /work/bpf/test_xdp.bpf.o sec xdp'
 ```
 
 (Repeat on node2 with `clab-xdp-lab-node2` to also attach there.)
