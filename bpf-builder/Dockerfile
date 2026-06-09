@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y \
     clang \
     llvm \
     llvm-dev \
+    less \
     libelf-dev \
     libbpf-dev \
     linux-tools-generic \
