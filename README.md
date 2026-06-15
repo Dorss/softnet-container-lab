@@ -4,6 +4,39 @@
 
 ---
 
+## Which repository to use
+
+Depending on the project you have been assigned (eBPF/XDP or Linux
+kernel/module development), pick **one** of the two repositories:
+
+| Project type | Repository |
+|---|---|
+| eBPF/XDP | this one — [softnet-container-lab](https://github.com/netgroup/softnet-container-lab) |
+| Linux kernel/module development | [kernel-playground](https://github.com/netgroup/kernel-playground) |
+
+### eBPF/XDP — `softnet-container-lab` (this repo)
+
+- **Scope:** eBPF programs (XDP, tc, kprobes, …), per-CPU maps, helpers,
+  BTF and ELF `SEC()` annotations.
+- **Toolchain:** Docker + containerlab. The `bpf-builder` image ships
+  `clang`/`llvm`/`bpftool`/`libbpf-dev` and is invoked from each lab's
+  `make`.
+- **Reference host:** Ubuntu 24.04.3 LTS, kernel
+  `Linux 6.8.0-124-generic (x86_64)`. The host kernel is used as-is — no
+  custom kernel is needed. BTF must be available at
+  `/sys/kernel/btf/vmlinux` (it is on the reference host).
+
+### Linux kernel/module development — [`kernel-playground`](https://github.com/netgroup/kernel-playground)
+
+- **Scope:** patches to the kernel source, out-of-tree `.ko` modules,
+  work on subsystems like Netfilter or the network stack.
+- **Toolchain:** a Podman container with the full build toolchain (gcc,
+  flex, bison, libelf, LLVM) plus a QEMU VM (`tests/vm/`) that boots the
+  freshly compiled `bzImage`. Kernel-level changes can be exercised
+  inside the VM without affecting the host.
+
+---
+
 ## Goal
 
 A simple 2-node containerlab topology:
