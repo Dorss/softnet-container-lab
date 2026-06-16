@@ -1,0 +1,56 @@
+=== E16 Basic Test Evidence ===
+Tue Jun 16 10:17:33 PM CEST 2026
+
+=== XDP status on rt1 eth1 ===
+xdp:
+eth1(31) generic id 191
+
+tc:
+
+flow_dissector:
+
+netfilter:
+
+
+=== XDP status on rt1 eth2 ===
+xdp:
+eth2(33) generic id 198
+
+tc:
+
+flow_dissector:
+
+netfilter:
+
+
+=== Ping hs1 -> hs2 ===
+PING 10.0.2.1 (10.0.2.1) 56(84) bytes of data.
+64 bytes from 10.0.2.1: icmp_seq=1 ttl=63 time=0.059 ms
+64 bytes from 10.0.2.1: icmp_seq=2 ttl=63 time=0.165 ms
+64 bytes from 10.0.2.1: icmp_seq=3 ttl=63 time=0.173 ms
+
+--- 10.0.2.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2032ms
+rtt min/avg/max/mdev = 0.059/0.132/0.173/0.051 ms
+
+=== Ping hs2 -> hs1 ===
+PING 10.0.1.1 (10.0.1.1) 56(84) bytes of data.
+64 bytes from 10.0.1.1: icmp_seq=1 ttl=63 time=0.051 ms
+64 bytes from 10.0.1.1: icmp_seq=2 ttl=63 time=0.066 ms
+64 bytes from 10.0.1.1: icmp_seq=3 ttl=63 time=0.054 ms
+
+--- 10.0.1.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2054ms
+rtt min/avg/max/mdev = 0.051/0.057/0.066/0.006 ms
+
+=== Blocked: hs1 -> hs2 destination port 80 ===
+hs1_to_hs2_port80_exit_code=124
+
+=== Allowed comparison: hs1 -> hs2 destination port 8080 ===
+hs1_to_hs2_port8080_exit_code=1
+
+=== Blocked: hs2 -> hs1 destination port 80 ===
+hs2_to_hs1_port80_exit_code=124
+
+=== Allowed comparison: hs2 -> hs1 destination port 8080 ===
+hs2_to_hs1_port8080_exit_code=1
