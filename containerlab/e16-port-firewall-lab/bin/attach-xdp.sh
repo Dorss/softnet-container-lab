@@ -7,7 +7,7 @@ BPF_OBJ="/work/bpf/port_firewall.bpf.o"
 SECTION="xdp"
 
 echo "[INFO] Attaching E16 XDP port firewall on router: ${RT_CONTAINER}"
-echo "[INFO] Blocked destination port: 80"
+echo "[INFO] Blocked ports are configured through the blocked_ports BPF map"
 echo ""
 
 echo "[INFO] Checking that the BPF object exists inside rt1..."
