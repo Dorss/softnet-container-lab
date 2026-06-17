@@ -1,0 +1,48 @@
+=== E16 statistics test evidence ===
+Wed Jun 17 06:24:41 PM CEST 2026
+
+=== BPF maps ===
+79: hash  name blocked_ports  flags 0x0
+80: array  name packet_stats  flags 0x0
+81: hash  name blocked_ports  flags 0x0
+82: array  name packet_stats  flags 0x0
+
+=== XDP status eth1 ===
+xdp:
+eth1(65) generic id 276
+
+tc:
+
+flow_dissector:
+
+netfilter:
+
+
+=== XDP status eth2 ===
+xdp:
+eth2(62) generic id 281
+
+tc:
+
+flow_dissector:
+
+netfilter:
+
+
+=== Packet statistics ===
+=== E16 packet statistics ===
+
+[INFO] Reading packet_stats map id 80
+[INFO] Reading packet_stats map id 82
+
+class        count
+-----        -----
+total        48
+ipv4         37
+ipv6         0
+tcp          5
+udp          0
+icmp         32
+other_l4     0
+dropped      3
+passed       45
