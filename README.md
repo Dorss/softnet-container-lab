@@ -1,6 +1,6 @@
 ## Project Documentation
 
-### E16 — Configurable Port Firewall with eBPF/XDP
+### E16 — Configurable Port Firewall with eBPF/XDP (Intermediate)
 
 This repository contains my implementation of project **E16 — Configurable Port Firewall**.
 
