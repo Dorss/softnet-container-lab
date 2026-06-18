@@ -1,6 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
+
+# This script reads packet counters from the packet_stats BPF map
+# and prints them in a human-readable table.
+
+
+
+# Make sure the router container is running before trying to read BPF maps.
 RT_CONTAINER="clab-e16-port-firewall-lab-rt1"
 
 if ! docker ps --format '{{.Names}}' | grep -q "^${RT_CONTAINER}$"; then
@@ -8,6 +15,10 @@ if ! docker ps --format '{{.Names}}' | grep -q "^${RT_CONTAINER}$"; then
     exit 1
 fi
 
+
+
+# Find all packet_stats maps inside the router container.
+# There may be more than one map because the XDP program is attached to two interfaces.
 MAP_IDS=$(docker exec "${RT_CONTAINER}" bpftool map show | awk '/name packet_stats/ {gsub(":", "", $1); print $1}')
 
 if [[ -z "${MAP_IDS}" ]]; then
@@ -16,9 +27,15 @@ if [[ -z "${MAP_IDS}" ]]; then
     exit 1
 fi
 
+
+# Human-readable names for the packet counter indexes used by the eBPF program.
 NAMES=("total" "ipv4" "ipv6" "tcp" "udp" "icmp" "other_l4" "dropped" "passed")
 TOTALS=(0 0 0 0 0 0 0 0 0)
 
+
+
+# Read one counter value from one packet_stats map.
+# The key is encoded as a 32-bit little-endian integer for bpftool.
 lookup_value() {
     local map_id="$1"
     local key="$2"
@@ -60,6 +77,8 @@ print(0)
 echo "=== E16 packet statistics ==="
 echo ""
 
+
+# Sum counters from all packet_stats maps and print one combined table.
 for map_id in ${MAP_IDS}; do
     echo "[INFO] Reading packet_stats map id ${map_id}"
 

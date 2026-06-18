@@ -20,6 +20,12 @@
 #define STAT_PASSED     8
 #define STAT_MAX        9
 
+/*
+ * Runtime firewall configuration map.
+ * Key: destination port in host byte order.
+ * Value: dummy flag. If the key exists, the port is blocked.
+ */
+
 struct {
     __uint(type, BPF_MAP_TYPE_HASH);
     __uint(max_entries, 256);
@@ -27,12 +33,29 @@ struct {
     __type(value, __u8);
 } blocked_ports SEC(".maps");
 
+
+
+
+
+/*
+ * Packet classification counters.
+ * Each index represents one class, such as IPv4, TCP, ICMP, dropped, or passed.
+ */
+
 struct {
     __uint(type, BPF_MAP_TYPE_ARRAY);
     __uint(max_entries, STAT_MAX);
     __type(key, __u32);
     __type(value, __u64);
 } packet_stats SEC(".maps");
+
+
+
+
+/*
+ * Increment one packet counter.
+ * The key selects which counter to update inside packet_stats.
+ */
 
 static __always_inline void bump_stat(__u32 key)
 {
@@ -43,11 +66,26 @@ static __always_inline void bump_stat(__u32 key)
         __sync_fetch_and_add(value, 1);
 }
 
+
+
+
+
+/*
+ * Pass the packet and update the passed-packet counter.
+ */
+
 static __always_inline int pass_packet(void)
 {
     bump_stat(STAT_PASSED);
     return XDP_PASS;
 }
+
+
+
+
+/*
+ * Drop the packet and update the dropped-packet counter.
+ */
 
 static __always_inline int drop_packet(void)
 {
@@ -73,6 +111,11 @@ int xdp_port_firewall(struct xdp_md *ctx)
 
     bump_stat(STAT_TOTAL);
 
+
+    /*
+     * Start parsing from the Ethernet header.
+     * Every XDP packet begins at ctx->data and must be checked against data_end.
+    */
     eth = data;
     if ((void *)(eth + 1) > data_end)
         return pass_packet();
@@ -86,6 +129,12 @@ int xdp_port_firewall(struct xdp_md *ctx)
 
     if (h_proto != ETH_P_IP)
         return pass_packet();
+
+
+    /*
+     * The firewall applies port filtering only to IPv4 TCP/UDP packets.
+     * IPv6 is counted and passed, while IPv4 continues to L4 parsing.
+    */
 
     bump_stat(STAT_IPV4);
 
@@ -104,6 +153,12 @@ int xdp_port_firewall(struct xdp_md *ctx)
     protocol = ip->protocol;
     l4_header = (void *)ip + ip_header_len;
 
+
+    /*
+    * Classify the IPv4 payload.
+    * TCP and UDP packets have destination ports, so they can be filtered.
+    * ICMP has no port number, so it is only counted and passed.
+    */
     if (protocol == IPPROTO_TCP) {
         struct tcphdr *tcp = l4_header;
 
@@ -133,6 +188,13 @@ int xdp_port_firewall(struct xdp_md *ctx)
         return pass_packet();
     }
 
+
+
+    /*
+    * Firewall decision:
+    * if the destination port exists in blocked_ports, drop the packet.
+    * Otherwise, allow it to pass.
+    */
     key = dst_port;
     blocked = bpf_map_lookup_elem(&blocked_ports, &key);
 

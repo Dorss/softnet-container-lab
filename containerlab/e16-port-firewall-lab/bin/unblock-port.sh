@@ -1,6 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
+
+# This script removes a destination port from the blocked_ports BPF map.
+# After removal, traffic to that destination port is allowed again.
+
+
 LAB_NAME="e16-port-firewall-lab"
 RT_CONTAINER="clab-${LAB_NAME}-rt1"
 PORT="${1:-}"
@@ -11,12 +16,13 @@ if [[ -z "${PORT}" ]]; then
     exit 1
 fi
 
+# Validate that the user provided a valid TCP/UDP port number.
 if ! [[ "${PORT}" =~ ^[0-9]+$ ]] || (( PORT < 1 || PORT > 65535 )); then
     echo "[ERROR] Invalid port: ${PORT}"
     exit 1
 fi
 
-# BPF map key type is __u32, so encode the port as 4 bytes little-endian.
+# Convert the port number to the 4-byte key format expected by bpftool.
 printf -v B0 "%02x" $(( PORT & 0xff ))
 printf -v B1 "%02x" $((( PORT >> 8 ) & 0xff ))
 printf -v B2 "%02x" $((( PORT >> 16 ) & 0xff ))
@@ -24,6 +30,11 @@ printf -v B3 "%02x" $((( PORT >> 24 ) & 0xff ))
 
 echo "[INFO] Unblocking destination port ${PORT}"
 
+
+
+
+# Remove the port from all blocked_ports maps, because the XDP program
+# is attached to both router interfaces.
 MAP_IDS=$(docker exec "${RT_CONTAINER}" bpftool map show | awk '/name blocked_ports/ {gsub(":", "", $1); print $1}')
 
 if [[ -z "${MAP_IDS}" ]]; then
@@ -32,6 +43,7 @@ if [[ -z "${MAP_IDS}" ]]; then
     exit 1
 fi
 
+# Delete the key from the map. If the key is not present, continue safely.
 for MAP_ID in ${MAP_IDS}; do
     echo "[INFO] Removing key from map id ${MAP_ID}"
     docker exec "${RT_CONTAINER}" bpftool map delete id "${MAP_ID}" \
